@@ -16,6 +16,8 @@
 #     -m MAX, --max MAX     Specify max number of IPs in batch
 #     -d DELAY, --delay DELAY
 #                           Specify delay between batches
+#     -r, --random          Randomize ip list
+#     -p, --parallell       scan in parallell
 #
 # SEE ALSE
 #   nmap(1)
@@ -78,6 +80,8 @@ def parseArgs():
     ap.add_argument("-c", "--command", required=False, help="Specify command")
     ap.add_argument("-m", "--max", required=False, help="Specify max number of IPs in batch")
     ap.add_argument("-d", "--delay", required=False, help="Specify delay between batches")
+    ap.add_argument("-r", "--random", required=False, action="store_true",  help="Randomize ip list")
+    ap.add_argument("-p", "--parallell", required=False, action="store_true", help="scan in parallell")
 
     ARGS = vars(ap.parse_args())
 
@@ -128,15 +132,28 @@ def main():
 
     #IPADDRESSES = loadFile(FILE,",")
     IPADDRESSES = readList(FILE)
-    IPADDRESSES = randomizeList(IPADDRESSES)
 
-    i=0
+    if ARGS['random']:
+        IPADDRESSES = randomizeList(IPADDRESSES)
+
+
+    i = 0
+    command = COMMAND
+
     for ip in IPADDRESSES:
 
-        command = COMMAND + " " + ip
-        print(command)
+        if ARGS['parallell']:
+            command = command + " " + ip
+        else:
+            command = COMMAND + " " + ip
+            print(command)
+
 
         if i%MAX == 1:
+            if ARGS['parallell']:
+                print(command)
+
+            command = COMMAND
             print("sleep {}".format(DELAY))
         i = i+1
 
